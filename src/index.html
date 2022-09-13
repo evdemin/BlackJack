@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../dist/output.css" rel="stylesheet">
+    <title>BlackJack</title>
+</head>
+<body>
+ <div class="flex flex-col justify-between items-center bg-[#457552] w-screen h-screen">
+    <div class="cards-number"></div>
+    <div class="cards absolute left-5 top-[300px] w-[250px] h-[300px] bg-[url('../src/cardback.png')] bg-no-repeat">
+    </div>
+    <h1>Bank points: <span class="bank-points">0</span></h1>
+    <div class="bank w-[800px] h-[400px] flex">
+        
+    </div>
+
+    <h1>Player points: <span class="player-points">0</span></h1>
+    <div class="player flex flex-row justify-between">
+    </div>
+    <div clas="">
+        <h1>Result: <span class="result">0</span></h1>
+    </div>
+    <div class="absolute flex flex-col h-[500px] justify-between right-10">
+        <span class="message">Make a bet</span>
+        <input type="text" name='bet' class="bet">
+        <input type="Submit" value="Submit" class="submit-bet bg-white rounded-full w-[100px]">
+        <button class="takeButton hidden bg-white rounded-full w-[100px]">Take</button>
+        <button class="standButton hidden bg-white rounded-full w-[100px]">Stand</button>
+        <button class="split-button  bg-white rounded-full w-[100px]">Split</button>
+        <button class="continue-button hidden bg-white rounded-full w-[100px]">Continue</button>
+        <span class="money"></span>
+    </div>
+ </div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

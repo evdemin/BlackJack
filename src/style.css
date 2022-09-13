@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.with-background{
+    background-image: url("../src/cardback.png");
+    background-repeat: no-repeat;
+}
