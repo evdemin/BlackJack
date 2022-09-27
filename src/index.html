@@ -8,32 +8,26 @@
     <title>BlackJack</title>
 </head>
 <body>
- <div class="flex flex-col justify-between items-center bg-[#457552] w-screen h-screen">
-    <div class="cards-number"></div>
-    <div class="cards absolute left-5 top-[300px] w-[250px] h-[300px] bg-[url('../src/cardback.png')] bg-no-repeat">
-    </div>
-    <h1>Bank points: <span class="bank-points">0</span></h1>
-    <div class="bank w-[800px] h-[400px] flex">
+ <div class="table flex flex-col bg-[#457552] min-h-[500px] justify-between w-screen h-screen" data-limit="100">
+    <div class="bank flex justify-around">
         
     </div>
 
-    <h1>Player points: <span class="player-points">0</span></h1>
-    <div class="player flex flex-row justify-between">
+   
+    <div class="players flex justify-around">
     </div>
-    <div clas="">
-        <h1>Result: <span class="result">0</span></h1>
-    </div>
-    <div class="absolute flex flex-col h-[500px] justify-between right-10">
-        <span class="message">Make a bet</span>
+    <div class="absolute flex flex-col w-[300px] min-h-[400px] h-100 justify-between items-center right-10 top-10">
         <input type="text" name='bet' class="bet">
-        <input type="Submit" value="Submit" class="submit-bet bg-white rounded-full w-[100px]">
-        <button class="takeButton hidden bg-white rounded-full w-[100px]">Take</button>
-        <button class="standButton hidden bg-white rounded-full w-[100px]">Stand</button>
-        <button class="split-button  bg-white rounded-full w-[100px]">Split</button>
-        <button class="continue-button hidden bg-white rounded-full w-[100px]">Continue</button>
-        <span class="money"></span>
+        <input type="Submit" value="Submit" class="submit-bet bg-white rounded-full w-[150px]">
+        <button class="takeButton bg-white rounded-full w-[150px]">Take</button>
+        <button class="standButton bg-white rounded-full w-[150px]">Stand</button>
+        <button class="split-button bg-white rounded-full w-[150px]">Split</button>
+        <button class="doubleButton bg-white rounded-full w-[150px]">Double Down</button>
+        <button class="continue-button hidden bg-white rounded-full w-[150px]">Continue</button>
+        <button class="addPlayer bg-white rounded-full w-[150px]">Add player</button>
+        <button class="startGame bg-white rounded-full w-[150px]">Start</button>
     </div>
  </div>
-<script type="module" src="./app.js"></script>
+<script type="module" src="./Game.js"></script>
 </body>
 </html>
