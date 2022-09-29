@@ -9,7 +9,19 @@ export default class Deck {
     '../src/img/club.svg',
   ]
   deck = []
-
+  constructor() {
+    for (let i = 0; i < this.values.length; i++) {
+      for (let j = 0; j < this.suits.length; j++) {
+        this.deck.push(
+          new Card(
+            this.values[i],
+            this.suits[j],
+            this.createUI(this.values[i], this.suits[j]),
+          ),
+        )
+      }
+    }
+  }
   createUI(value, suit) {
     let element = document.createElement('div')
     let content = document.createTextNode(value)
@@ -27,20 +39,6 @@ export default class Deck {
     suitImage.src = `${suit}`
     element.appendChild(suitImage)
     return element
-  }
-  createDeck() {
-    for (let i = 0; i < this.values.length; i++) {
-      for (let j = 0; j < this.suits.length; j++) {
-        this.deck.push(
-          new Card(
-            this.values[i],
-            this.suits[j],
-            this.createUI(this.values[i], this.suits[j]),
-          ),
-        )
-      }
-    }
-    return this.deck
   }
   getCard() {
     return this.deck.pop()

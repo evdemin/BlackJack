@@ -8,4 +8,14 @@ export default class Card {
   getValue() {
     return this.value
   }
+
+  getPoints(){
+    if (this.value == 'K' || this.value == 'Q' || this.value == 'J') {
+        return 10;
+      } else if (this.value === 'A') {
+        return 11;
+      } else {
+        return parseInt(this.value,10);
+      }
+  }
 }

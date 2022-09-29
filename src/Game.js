@@ -3,37 +3,62 @@ import Player from './Player.js'
 import Hand from './Hand.js'
 import Deck from './Deck.js'
 import PlayingField from './PlayingField.js'
-let cards = document.querySelector('.cards')
-let card = document.querySelector('.card')
-let take = document.querySelector('.takeButton')
-let cardNumber = document.querySelector('.cards-number')
-let submitBet = document.querySelector('.submit-bet')
-let standButton = document.querySelector('.standButton')
-let result = document.querySelector('.result')
-let continueButton = document.querySelector('.continue-button')
-let splitButton = document.querySelector('.split-button')
-let betField = document.querySelector('.bet')
-let addPlayer = document.querySelector('.addPlayer')
-let startGame = document.querySelector('.startGame')
-let doubleButton = document.querySelector('.doubleButton')
-let table = document.querySelector('.table')
-let playersBlock = document.querySelector('.players')
 let game
 
 class Game {
-  currentPlayer = 1
+  take = document.querySelector('.takeButton')
+  cardNumber = document.querySelector('.cards-number')
+  submitBet = document.querySelector('.submit-bet')
+  standButton = document.querySelector('.standButton')
+  result = document.querySelector('.result')
+  continueButton = document.querySelector('.continueGame')
+  quitButton = document.querySelector('.quitGame')
+  splitButton = document.querySelector('.split-button')
+  betField = document.querySelector('.bet')
+  addPlayer = document.querySelector('.addPlayer')
+  startGame = document.querySelector('.startGame')
+  doubleButton = document.querySelector('.doubleButton')
+  table = document.querySelector('.table')
+  playersBlock = document.querySelector('.players')
+  newGameButton = document.querySelector('.newGame')
   dealer
   deck
   players = []
+  newRound = []
   constructor() {
     this.deck = new Deck()
-    this.deck.createDeck()
+    this.startGame.addEventListener('click', () => {
+      this.launch()
+    })
+    this.addPlayer.addEventListener('click', () => {
+      this.newPlayer()
+    })
+  }
+  launch() {
+    if (this.hasEnoughPlayers()) {
+      this.dealer = new Dealer()
+      this.init()
+    }
+  }
+  async init() {
+    this.startGame.classList.toggle('hidden')
+    this.addPlayer.classList.toggle('hidden')
+    this.submitBet.classList.toggle('hidden')
+    for (let player of this.players) {
+      const bet = await this.getBet(player)
+      player.field.messageField.innerHTML = ''
+      player.hands[0].makeBet(bet)
+      player.updateCash()
+    }
+    this.submitBet.classList.toggle('hidden')
+    this.shuffle()
+    this.dealHands()
+    this.start()
   }
   newPlayer() {
-    let player = new Player(this.deck)
+    let player = new Player()
     this.players.push(player)
-    playersBlock.appendChild(player.field.playingField)
-    console.log(player)
+    this.playersBlock.appendChild(player.field.getPlayingField())
   }
   dealersTurn() {
     let ifTake = false
@@ -41,7 +66,7 @@ class Game {
       ifTake = true
     }
     while (ifTake) {
-      let card = this.deck.deck.pop()
+      let card = this.deck.getCard()
       this.dealer.hands[0].addCard(card)
       this.dealer.updatePoints(this.dealer.hands[0])
       if (this.dealer.hands[0].points >= 17) {
@@ -50,32 +75,29 @@ class Game {
     }
   }
   getBet(player) {
-    player.field.messageField.innerHTML = "Make bet";
+    player.field.messageField.innerHTML = 'Make bet'
     return new Promise((resolve) => {
       const checkBet = () => {
         let bet = 0
-        if (+betField.value > 0 && /^[0-9]+$/.test(betField.value)) {
-          if (player.money - +betField.value >= 0) {
-            bet = +betField.value
-            console.log(player.money)
+        if (+this.betField.value > 0 && /^[0-9]+$/.test(this.betField.value)) {
+          if (player.getMoney() - +this.betField.value >= 0) {
+            bet = +this.betField.value
             player.money -= bet
-            console.log(player.money)
-            submitBet.removeEventListener('click', checkBet)
+            this.submitBet.removeEventListener('click', checkBet)
             return resolve(bet)
           } else {
-            console.log('You have no money')
+            player.field.messageField.innerHTML = 'You have no money'
           }
         } else {
-          console.log('correct sum needed')
-          player.playingField.result.innerHTML = 'Type in correct sum'
+          player.field.messageField.innerHTML = 'Type in correct sum'
         }
       }
-      submitBet.addEventListener('click', checkBet)
+      this.submitBet.addEventListener('click', checkBet)
     })
   }
 
   hasEnoughPlayers() {
-    return this.players.length >= 2 || this.players.length < 8
+    return this.players.length >= 1 && this.players.length < 8
   }
   playersNotPlayed() {
     return this.currentPlayer < this.players.length
@@ -85,15 +107,26 @@ class Game {
       const hitAction = () => {
         hand.hit(this.deck.deck)
         player.updatePoints(hand)
-        if (hand.isBust()) {
-          take.removeEventListener('click', hitAction)
+        if (hand.isBust() || hand.isBlackJack()) {
+          this.take.removeEventListener('click', hitAction)
           return resolve(true)
         }
       }
+      const continueAction = () => {
+        this.continueButton.removeEventListener('click', continueAction)
+        return resolve(player)
+      }
+      const quitAction = () => {
+        this.quitButton.removeEventListener('click', quitAction)
+        this.continueButton.removeEventListener('click', continueAction)
+        return resolve(true)
+      }
+
       const standAction = () => {
-        take.removeEventListener('click', hitAction)
-        standButton.removeEventListener('click', standAction)
-        doubleButton.removeEventListener('click', doubleAction)
+        this.take.removeEventListener('click', hitAction)
+        this.standButton.removeEventListener('click', standAction)
+        this.doubleButton.removeEventListener('click', doubleAction)
+        this.splitButton.removeEventListener('click', splitAction)
         return resolve(true)
       }
       const splitAction = async () => {
@@ -105,41 +138,85 @@ class Game {
           player.updatePoints(hand)
           player.updatePoints(newHand)
           player.field.playingField.appendChild(newHand.playingField.htmlBlock)
-          splitButton.removeEventListener('click', splitAction)
-        } else{
-            console.log('You have no money')
+        } else {
+          console.log('You have no money')
         }
       }
       const doubleAction = () => {
         hand.doubleDown(player)
-        hand.addCard(this.deck.deck.pop())
+        hand.addCard(this.deck.getCard())
         player.updateCash()
         player.updatePoints(hand)
-        take.removeEventListener('click', hitAction)
-        doubleButton.removeEventListener('click', doubleAction)
-        splitButton.removeEventListener('click', splitAction)
-        standButton.removeEventListener('click', standAction)
+        this.take.removeEventListener('click', hitAction)
+        this.doubleButton.removeEventListener('click', doubleAction)
+        this.splitButton.removeEventListener('click', splitAction)
+        this.standButton.removeEventListener('click', standAction)
         return resolve(true)
       }
-      splitButton.addEventListener('click', splitAction)
-      take.addEventListener('click', hitAction)
-      doubleButton.addEventListener('click', doubleAction)
-      standButton.addEventListener('click', standAction)
+      this.continueButton.addEventListener('click', continueAction)
+      this.quitButton.addEventListener('click', quitAction)
+      this.splitButton.addEventListener('click', splitAction)
+      this.take.addEventListener('click', hitAction)
+      this.doubleButton.addEventListener('click', doubleAction)
+      this.standButton.addEventListener('click', standAction)
     })
   }
-  async start() {
+  async nextRound() {
+    for (let pl of this.players) {
+      console.log(pl)
+      const stay = await this.getAction(pl.hands[0], pl)
+      if (stay instanceof Player) {
+        stay.cleanFields()
+        console.log(stay)
+        this.newRound.push(stay)
+      }
+    }
+    this.continueButton.classList.toggle('hidden')
+    this.quitButton.classList.toggle('hidden')
+    this.players = this.newRound
+    console.log(this.players)
+    this.newRound = []
+    this.playersBlock.innerHTML = ''
     for (let player of this.players) {
+      this.playersBlock.appendChild(player.field.getPlayingField())
+    }
+   this.dealer.cleanFields()
+    this.dealer.field.fieldBank.innerHTML = ''
+    this.dealer.field = new PlayingField()
+    this.addPlayer.classList.toggle('hidden')
+    this.startGame.classList.toggle('hidden')
+  }
+
+  async start() {
+    this.doubleButton.classList.toggle('hidden')
+    this.take.classList.toggle('hidden')
+    this.standButton.classList.toggle('hidden')
+    for (let player of this.players) {
+      console.log(player)
+      player.field.playingField.classList.add('scale-100')
       for (let hand of player.hands) {
-        console.log(player.field)
         if (!hand.isBlackJack()) {
-            hand.playingField.htmlBlock.classList.add('scale-150')
+          if (hand.isSplittable()) {
+            this.splitButton.classList.toggle('hidden')
+          }
+          hand.playingField.htmlBlock.classList.add('scale-150')
           await this.getAction(hand, player)
-            hand.playingField.htmlBlock.classList.remove('scale-150')
+
+          hand.playingField.htmlBlock.classList.remove('scale-150')
         }
       }
     }
     this.dealersTurn()
     this.countPoints()
+    this.standButton.classList.toggle('hidden')
+    this.doubleButton.classList.toggle('hidden')
+    this.take.classList.toggle('hidden')
+    if (!this.splitButton.classList.contains('hidden')) {
+      this.splitButton.classList.toggle('hidden')
+    }
+    this.continueButton.classList.toggle('hidden')
+    this.quitButton.classList.toggle('hidden')
+    this.nextRound()
   }
 
   shuffle() {
@@ -155,48 +232,47 @@ class Game {
   dealHands() {
     for (let j = 0; j < 2; j++) {
       for (let player of this.players) {
-        let card = this.deck.deck.pop()
+        let card = this.deck.getCard()
         player.hands[0].addCard(card)
         player.field.playingField.appendChild(
           player.hands[0].playingField.htmlBlock,
         )
-        player.updatePoints(player.hands[0])
+        player.hands[0].updatePoints()
       }
-      let dealerCard = this.deck.deck.pop()
+      let dealerCard = this.deck.getCard()
       this.dealer.hands[0].addCard(dealerCard)
-      this.dealer.field.fieldBank.appendChild(this.dealer.hands[0].playingField.htmlBlock)
-      this.dealer.updatePoints(this.dealer.hands[0])
+      this.dealer.field.fieldBank.appendChild(
+        this.dealer.hands[0].playingField.htmlBlock,
+      )
+      this.dealer.hands[0].updatePoints()
     }
   }
 
   countPoints() {
+    let dealersHand = this.dealer.hands[0]
     for (let player of this.players) {
       for (let hand of player.hands) {
-        console.log(hand.betSum);
-        if (this.dealer.hands[0].points <= 21 && hand.points <= 21) {
-          if (hand.points == 21 && this.dealer.hands[0].points == 21) {
-            hand.playingField.result.innerHTML = 'Das Spiel ist unentschieden'
-            player.money += hand.betSum
-          } else if (hand.points == 21 && this.dealer.hands[0].points < 21) {
-            hand.playingField.result.innerHTML = 'Du hast gewonnen'
-            player.money += hand.betSum + hand.betSum * 1.5
-          } else if (this.dealer.hands[0].points == 21 && hand.points < 21) {
-            hand.playingField.result.innerHTML = 'Du hast verloren'
-          } else if (this.dealer.hands[0].points == hand.points) {
-            hand.playingField.result.innerHTML = 'Das Spiel ist unentschieden'
-            player.money += hand.betSum
-          } else if (this.dealer.hands[0].points < hand.points) {
-            hand.playingField.result.innerHTML = 'Du hast gewonmnen'
-            player.money += hand.betSum * 2
+        if (dealersHand.getHandPoints() <= 21 && hand.getHandPoints() <= 21) {
+          if (hand.getHandPoints() == dealersHand.getHandPoints()) {
+            hand.setResult('Das Spiel ist unentschieden')
+            player.money += hand.getBetSum()
+          } else if (hand.isBlackJack()) {
+            hand.setResult('Du hast gewonnen')
+            player.money += hand.getBetSum() + hand.getBetSum() * 1.5
+          } else if (dealersHand.isBlackJack()) {
+            hand.setResult('Du hast verloren')
+          } else if (dealersHand.getHandPoints() < hand.getHandPoints()) {
+            hand.setResult('Du hast gewonmnen')
+            player.money += hand.getBetSum() * 2
           } else {
-            hand.playingField.result.innerHTML = 'Du hast verloren'
+            hand.setResult('Du hast verloren')
           }
         } else {
-          if (hand.points > 21) {
-            hand.playingField.result.innerHTML = 'Du hast verloren'
-          } else if (this.dealer.hands[0].points > 21) {
-            hand.playingField.result.innerHTML = 'Du hast gewonnen'
-            player.money += hand.betSum * 2
+          if (hand.isBust()) {
+            hand.setResult('Du hast verloren')
+          } else if (dealersHand.isBust()) {
+            hand.setResult('Du hast gewonnen')
+            player.money += hand.getBetSum() * 2
           }
         }
         player.updateCash()
@@ -205,31 +281,4 @@ class Game {
   }
 }
 
-continueButton.addEventListener('click', () => {
-  game.continueGame()
-  continueButton.classList.toggle('hidden')
-})
-
-game = new Game()
-
-startGame.addEventListener('click', () => {
-  if (game.hasEnoughPlayers()) init()
-})
-
-addPlayer.addEventListener('click', () => {
-  game.newPlayer()
-  console.log(game.players)
-})
-
-async function init() {
-  game.dealer = new Dealer()
-  for (let player of game.players) {
-    const bet = await game.getBet(player)
-    player.field.messageField.innerHTML = "";
-    player.hands[0].makeBet(bet)
-    player.updateCash()
-  }
-  game.shuffle()
-  game.dealHands()
-  game.start()
-}
+game = new Game().launch()

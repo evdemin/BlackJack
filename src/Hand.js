@@ -14,32 +14,32 @@ export default class Hand {
 
   addCard(card) {
     this.cards.push(card)
-    if (card.value === 'K' || card.value == 'Q' || card.value == 'J') {
-      this.points += 10
-    } else if (card.value == 'A') {
-      if (this.points + 11 > 21) this.points += 1
-      else this.points += 11
-    } else this.points += +card.value
+    this.points = this.recountPoints(card);
     this.playingField.htmlBlock.appendChild(card.ui)
   }
-  removeCard(card) {
-    if (card.value === 'K' || card.value == 'Q' || card.value == 'J') {
-      this.points -= 10
-    } else if (card.value == 'A') {
-      this.points -= 1
-    } else this.points -= +card.value
-  }
-  isBlackJack() {
-    if (this.points == 21) {
-      return true
+  recountPoints(card){
+    return this.cards.reduce((accumulator, current) =>{
+      if((this.points + card.getPoints()) > 21){
+        if(current.getValue() === 'A'){
+          return accumulator += 1;
+        } else {
+          return accumulator += current.getPoints();
+        }
+    } else {
+        return accumulator += current.getPoints();
     }
+  }, 0)
+}
+ 
+  isBlackJack() {
+    return this.points == 21
   }
   isBust() {
-    if (this.points > 21) return true
+    return this.points > 21
   }
 
   doubleDown(player) {
-    player.money -= this.betSum
+    player.money -= this.getBetSum();
     this.betSum *= 2
   }
 
@@ -52,7 +52,7 @@ export default class Hand {
   split(player) {
     const newHand = new Hand()
     const card = this.cards.pop()
-    this.removeCard(card)
+    this.points = this.recountPoints(card);
     player.updatePoints(this)
     newHand.addCard(card)
     newHand.playingField.htmlBlock.appendChild(card.ui)
@@ -62,5 +62,21 @@ export default class Hand {
 
   makeBet(bet) {
     this.betSum = bet
+  }
+
+  getBetSum(){
+    return this.betSum;
+  }
+  getHandPoints(){
+    return this.points;
+  }
+  updatePoints() {
+    this.playingField.pointsField.innerHTML = this.points
+  }
+  isSplittable(){
+    return this.cards.length == 2 && this.cards[0].getValue() === this.cards[1].getValue()
+  }
+  setResult(resultString){
+    this.playingField.result.innerHTML = resultString;
   }
 }
