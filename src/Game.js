@@ -3,9 +3,19 @@ import Player from './Player.js'
 import Hand from './Hand.js'
 import Deck from './Deck.js'
 import PlayingField from './PlayingField.js'
+import Generator from './Generator.js'
+import Card from './Card.js'
+import fs from 'fs';
+import jsdom from 'jsdom'
+
+const JSDOM = jsdom.JSDOM
 let game
 
-class Game {
+let html = fs.readFileSync('./src/index.html')
+let page = new JSDOM(html)
+
+
+export default class Game {
   take = document.querySelector('.takeButton')
   cardNumber = document.querySelector('.cards-number')
   submitBet = document.querySelector('.submit-bet')
@@ -21,6 +31,7 @@ class Game {
   table = document.querySelector('.table')
   playersBlock = document.querySelector('.players')
   newGameButton = document.querySelector('.newGame')
+  
   dealer
   deck
   players = []
@@ -180,7 +191,7 @@ class Game {
     for (let player of this.players) {
       this.playersBlock.appendChild(player.field.getPlayingField())
     }
-   this.dealer.cleanFields()
+    this.dealer.cleanFields()
     this.dealer.field.fieldBank.innerHTML = ''
     this.dealer.field = new PlayingField()
     this.addPlayer.classList.toggle('hidden')
@@ -282,3 +293,5 @@ class Game {
 }
 
 game = new Game().launch()
+module.exports = page
+module.exports = Game;

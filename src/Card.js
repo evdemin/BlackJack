@@ -8,7 +8,9 @@ export default class Card {
   getValue() {
     return this.value
   }
-
+ setAcePoints(point){
+  this.value = point;
+ }
   getPoints(){
     if (this.value == 'K' || this.value == 'Q' || this.value == 'J') {
         return 10;

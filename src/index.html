@@ -30,6 +30,12 @@
         <button class="quitGame hidden bg-white rounded-full w-[150px]">Quit</button>
     </div>
  </div>
-<script type="module" src="./Game.js"></script>
+
+<script type="module" src="./Game.js" type="module"></script>
+<script src="../node_modules/mocha/mocha.js" type="module"></script>
+<script src="../node_modules/chai/chai.js" type="module"></script>
+<script>mocha.setup('bdd')</script>
+<script src="../test/Game.test.js" type="module"></script>
+<script>mocha.run();</script>
 </body>
 </html>

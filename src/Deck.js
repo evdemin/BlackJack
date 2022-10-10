@@ -35,8 +35,10 @@ export default class Deck {
       'text-center',
       'mb-10'
     )
-    const suitImage = new Image(100, 100)
-    suitImage.src = `${suit}`
+    const suitImage = document.createElement("img");
+    suitImage.setAttribute("src", `${suit}`);
+    suitImage.setAttribute("width","100");
+    suitImage.setAttribute("height","100");
     element.appendChild(suitImage)
     return element
   }

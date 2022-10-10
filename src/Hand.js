@@ -4,7 +4,6 @@ export default class Hand {
   isSplitted = true
   points = 0
   betSum = 0
-  betted = false
   htmlBlock
   playingField
   constructor() {
@@ -13,22 +12,23 @@ export default class Hand {
 
 
   addCard(card) {
-    this.cards.push(card)
-    this.points = this.recountPoints(card);
+
+    this.cards.push(card);
+    this.points += card.getPoints();
+    this.points = this.recountPoints();
     this.playingField.htmlBlock.appendChild(card.ui)
   }
-  recountPoints(card){
-    return this.cards.reduce((accumulator, current) =>{
-      if((this.points + card.getPoints()) > 21){
-        if(current.getValue() === 'A'){
-          return accumulator += 1;
-        } else {
-          return accumulator += current.getPoints();
+  recountPoints(){
+    let countedPoints = this.points;
+      for(let element of this.cards){
+        if(countedPoints > 21){
+          if(element.getValue()==='A' && element.getPoints() == 11){
+          countedPoints -= 10;
+          element.setAcePoints(1);
         }
-    } else {
-        return accumulator += current.getPoints();
+      } 
     }
-  }, 0)
+    return countedPoints;
 }
  
   isBlackJack() {
@@ -52,14 +52,16 @@ export default class Hand {
   split(player) {
     const newHand = new Hand()
     const card = this.cards.pop()
-    this.points = this.recountPoints(card);
+    this.points -= card.getPoints();
     player.updatePoints(this)
     newHand.addCard(card)
     newHand.playingField.htmlBlock.appendChild(card.ui)
     player.hands.push(newHand)
     return newHand
   }
-
+  isSplittable(){
+    return this.cards.length == 2 && this.cards[0].getValue() === this.cards[1].getValue()
+  }
   makeBet(bet) {
     this.betSum = bet
   }
@@ -72,9 +74,6 @@ export default class Hand {
   }
   updatePoints() {
     this.playingField.pointsField.innerHTML = this.points
-  }
-  isSplittable(){
-    return this.cards.length == 2 && this.cards[0].getValue() === this.cards[1].getValue()
   }
   setResult(resultString){
     this.playingField.result.innerHTML = resultString;
