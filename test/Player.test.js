@@ -1,32 +1,58 @@
-import assert from "assert"
-import chai from 'chai'
-import chaidom from 'chai-dom'
+import fs from "fs";
+import chai from "chai";
+import chaidom from "chai-dom";
 chai.use(chaidom);
-import { expect } from 'chai'
-import Player from '../src/Player.js'
-import Card from '../src/Card.js'
-import Generator from '../src/Generator.js'
-import jsdom from "jsdom";
-import Deck from "../src/Deck.js";
-import Hand from "../src/Hand.js";
-const { JSDOM } = jsdom;
-const doc = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>', {
-    resources: 'usable'
+import { expect } from "chai";
+import Player from "../src/Player.js";
+import Card from "../src/Card.js";
+import { JSDOM } from "jsdom";
+describe("updateCash()", () => {
+	function checkUpdateCash(cash) {
+		it("check if player.field.money.innerHTML == player.money", () => {
+			let jsdom;
+			let html;
+			html = fs.readFileSync("./src/index.html");
+			jsdom = new JSDOM(html);
+
+			global.document = jsdom.window.document;
+			let player = new Player();
+			player.money = cash;
+			player.updateCash();
+			expect(player.field.money.innerHTML).to.equal(`${cash}`);
+		});
+	}
+	for (let i = 10; i < 500; i += 10) {
+		checkUpdateCash(i);
+	}
 });
-global.window = doc.window;
-global.document = doc.window.document;
 
-describe("updateCash()", ()=>{
-    function checkUpdateCash(cash){
+describe("cleanField()", () => {
+	it("hands length has to be 1", () => {
+		let jsdom;
+		let html;
+		html = fs.readFileSync("./src/index.html");
+		jsdom = new JSDOM(html);
 
-    let player = new Player();
-        player.money = cash;
-        player.updateCash();
-        it("check if player.field.money.innerHTML == player.money", ()=>{
-            expect(player.field.money.innerHTML).to.equal(`${cash}`);
-        })
-    }
-    for(let i = 10; i < 500;i+=10){
-            checkUpdateCash(i);
-    }
-})
+		global.document = jsdom.window.document;
+		let player = new Player();
+		player.hands[0].addCard(
+			new Card("10", null, document.createElement("div"))
+		);
+		player.cleanFields();
+		expect(player.hands.length).to.equal(1);
+	});
+	it("hand has to be empty", () => {
+		let jsdom;
+		let html;
+		html = fs.readFileSync("./src/index.html");
+		jsdom = new JSDOM(html);
+
+		global.document = jsdom.window.document;
+		let player = new Player();
+		player.hands[0].addCard(
+			new Card("10", null, document.createElement("div"))
+		);
+		player.cleanFields();
+		expect(player.hands[0].cards.length).to.equal(0);
+	});
+});
